@@ -23,7 +23,7 @@ ext_modules = [
         ]),
     ]
 
-INSTALL_REQUIREMENTS = ['numpy', 'torch', 'torchvision', 'scikit-image', 'tqdm', 'imageio']
+## INSTALL_REQUIREMENTS = ['numpy', 'torch', 'torchvision', 'scikit-image', 'tqdm', 'imageio']
 
 setup(
     description='PyTorch implementation of "Soft Rasterizer"',
