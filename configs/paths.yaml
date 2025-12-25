@@ -1,0 +1,14 @@
+# Paths to data and pretrained model weights.
+# PLEASE FILL IN THESE PATHS.
+
+data:
+  sketches_root: ./data/sketches # Path to the root directory of the sketch dataset
+
+weights:
+  # Path to the pretrained Sketch2Model encoder checkpoint.
+  # Leave blank to use random initialization.
+  encoder: "" 
+
+  # Path to the pretrained Sketch2Model decoder checkpoint.
+  # Leave blank to use random initialization.
+  decoder: ""

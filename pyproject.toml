@@ -1,0 +1,28 @@
+[project]
+name = "sketch2model-fewshot"
+version = "0.1.0"
+description = "Few-shot learning for sketch-based 3D object classification."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+
+dependencies = [
+    "torch",
+    "torchvision",
+    "numpy",
+    "Pillow",
+    "PyYAML",
+    "scikit-learn",
+    "tqdm",
+    "pandas"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "flake8"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

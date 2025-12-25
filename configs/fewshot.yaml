@@ -1,0 +1,20 @@
+# Few-shot learning parameters
+latent_dim: 256
+N_way: 5
+K_shot: 5
+Q_query: 15
+episodes: 50 # Number of episodes for training/evaluation
+
+# Loss function configuration
+loss:
+  type: "silhouette_l2"   # Options: "silhouette_l2", "chamfer" (not implemented)
+  normalize_per_class: true
+
+# Per-class adapter configuration
+adapter:
+  type: "linear" # "linear" or "mlp"
+  hidden: 0 # Hidden layer size for MLP adapter. 0 means linear.
+
+# Data parameters
+data:
+  img_size: 224
