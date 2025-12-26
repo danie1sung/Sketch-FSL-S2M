@@ -117,7 +117,6 @@ __device__ __forceinline__ void euclidean_p2f_distance(scalar_t &sign, scalar_t 
         } else if (w[2] <= 0 && w[0] <= 0) {
             v0 = 1;
             if (face_obt[1] == 1 && (xp - face[3]) * (face[0] - face[3]) + (yp - face[4]) * (face[1] - face[4]) > 0) v0 = 0;
-            cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
         } else if (w[0] <= 0 && w[1] <= 0) {
             v0 = 2;
             if (face_obt[2] == 1 && (xp - face[6]) * (face[3] - face[6]) + (yp - face[7]) * (face[4] - face[7]) > 0) v0 = 1;
