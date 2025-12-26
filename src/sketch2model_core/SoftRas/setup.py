@@ -33,7 +33,7 @@ setup(
     version='1.0.0',
     name='soft_renderer',
     packages=['soft_renderer', 'soft_renderer.cuda', 'soft_renderer.functional'],
-    install_requires=INSTALL_REQUIREMENTS,
+    # install_requires=INSTALL_REQUIREMENTS,
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExtension}
 )
