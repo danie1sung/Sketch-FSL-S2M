@@ -2,6 +2,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <ATen/cuda/CUDAContext.h>
 
 // for the older gpus atomicAdd with double arguments does not exist
 #if  __CUDA_ARCH__ < 600 and defined(__CUDA_ARCH__)
@@ -116,6 +117,7 @@ __device__ __forceinline__ void euclidean_p2f_distance(scalar_t &sign, scalar_t 
         } else if (w[2] <= 0 && w[0] <= 0) {
             v0 = 1;
             if (face_obt[1] == 1 && (xp - face[3]) * (face[0] - face[3]) + (yp - face[4]) * (face[1] - face[4]) > 0) v0 = 0;
+            cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
         } else if (w[0] <= 0 && w[1] <= 0) {
             v0 = 2;
             if (face_obt[2] == 1 && (xp - face[6]) * (face[3] - face[6]) + (yp - face[7]) * (face[4] - face[7]) > 0) v0 = 1;
@@ -665,52 +667,51 @@ std::vector<at::Tensor> forward_soft_rasterize_cuda(
     const auto num_faces = faces.size(1);
     const auto texture_size = textures.size(2);
     const auto texture_res = int(sqrt(texture_size));
-    const int threads = 512;
-    const dim3 blocks_1 ((batch_size * num_faces - 1) / threads +1);
+        const int threads = 512;
+        const dim3 blocks_1 ((batch_size * num_faces - 1) / threads + 1);
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "forward_soft_rasterize_inv_cuda", ([&] {
-      forward_soft_rasterize_inv_cuda_kernel<scalar_t><<<blocks_1, threads>>>(
-          faces.data<scalar_t>(),
-          faces_info.data<scalar_t>(),
-          batch_size,
-          num_faces,
-          image_size);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "forward_soft_rasterize_inv_cuda", ([&] {
+            forward_soft_rasterize_inv_cuda_kernel<scalar_t><<<blocks_1, threads, 0, stream>>>(
+                    faces.data_ptr<scalar_t>(),
+                    faces_info.data_ptr<scalar_t>(),
+                    batch_size,
+                    num_faces,
+                    image_size);
+            }));
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-            printf("Error in forward_transform_inv_triangle: %s\n", cudaGetErrorString(err));
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in forward_transform_inv_triangle: %s", cudaGetErrorString(err));
 
-    const dim3 blocks_2 ((batch_size * image_size * image_size - 1) / threads +1);
+        const dim3 blocks_2 ((batch_size * image_size * image_size - 1) / threads + 1);
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "forward_eff_soft_rasterize_cuda", ([&] {
-      forward_soft_rasterize_cuda_kernel<scalar_t><<<blocks_2, threads>>>(
-          faces.data<scalar_t>(),
-          textures.data<scalar_t>(),
-          faces_info.data<scalar_t>(),
-          aggrs_info.data<scalar_t>(),
-          soft_colors.data<scalar_t>(),
-          batch_size,
-          num_faces,
-          image_size,
-          texture_size,
-          texture_res,
-          near,
-          far,
-          eps,
-          sigma_val,
-          func_id_dist,
-          dist_eps,
-          gamma_val,
-          func_id_rgb,
-          func_id_alpha,
-          texture_sample_type,
-          double_side);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "forward_eff_soft_rasterize_cuda", ([&] {
+            forward_soft_rasterize_cuda_kernel<scalar_t><<<blocks_2, threads, 0, stream>>>(
+                    faces.data_ptr<scalar_t>(),
+                    textures.data_ptr<scalar_t>(),
+                    faces_info.data_ptr<scalar_t>(),
+                    aggrs_info.data_ptr<scalar_t>(),
+                    soft_colors.data_ptr<scalar_t>(),
+                    batch_size,
+                    num_faces,
+                    image_size,
+                    texture_size,
+                    texture_res,
+                    near,
+                    far,
+                    eps,
+                    sigma_val,
+                    func_id_dist,
+                    dist_eps,
+                    gamma_val,
+                    func_id_rgb,
+                    func_id_alpha,
+                    texture_sample_type,
+                    double_side);
+            }));
 
-    err = cudaGetLastError();
-    if (err != cudaSuccess) 
-        printf("Error in forward_soft_rasterize: %s\n", cudaGetErrorString(err));
+        err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in forward_soft_rasterize: %s", cudaGetErrorString(err));
 
     return {faces_info, aggrs_info, soft_colors};
 }
@@ -742,40 +743,40 @@ std::vector<at::Tensor> backward_soft_rasterize_cuda(
     const auto num_faces = faces.size(1);
     const auto texture_size = textures.size(2);
     const auto texture_res = int(sqrt(texture_size));
-    const int threads = 512;
-    const dim3 blocks ((batch_size * image_size * image_size - 1) / threads + 1);
+        const int threads = 512;
+        const dim3 blocks ((batch_size * image_size * image_size - 1) / threads + 1);
+        cudaStream_t stream_back = at::cuda::getCurrentCUDAStream().stream();
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "backward_soft_rasterize_cuda", ([&] {
-      backward_soft_rasterize_cuda_kernel<scalar_t><<<blocks, threads>>>(
-          faces.data<scalar_t>(),
-          textures.data<scalar_t>(),
-          soft_colors.data<scalar_t>(),
-          faces_info.data<scalar_t>(),
-          aggrs_info.data<scalar_t>(),
-          grad_faces.data<scalar_t>(),
-          grad_textures.data<scalar_t>(),
-          grad_soft_colors.data<scalar_t>(),
-          batch_size,
-          num_faces,
-          image_size,
-          texture_size,
-          texture_res,
-          near,
-          far,
-          eps,
-          sigma_val,
-          func_id_dist,
-          dist_eps,
-          gamma_val,
-          func_id_rgb,
-          func_id_alpha,
-          texture_sample_type,
-          double_side);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "backward_soft_rasterize_cuda", ([&] {
+            backward_soft_rasterize_cuda_kernel<scalar_t><<<blocks, threads, 0, stream_back>>>(
+                    faces.data_ptr<scalar_t>(),
+                    textures.data_ptr<scalar_t>(),
+                    soft_colors.data_ptr<scalar_t>(),
+                    faces_info.data_ptr<scalar_t>(),
+                    aggrs_info.data_ptr<scalar_t>(),
+                    grad_faces.data_ptr<scalar_t>(),
+                    grad_textures.data_ptr<scalar_t>(),
+                    grad_soft_colors.data_ptr<scalar_t>(),
+                    batch_size,
+                    num_faces,
+                    image_size,
+                    texture_size,
+                    texture_res,
+                    near,
+                    far,
+                    eps,
+                    sigma_val,
+                    func_id_dist,
+                    dist_eps,
+                    gamma_val,
+                    func_id_rgb,
+                    func_id_alpha,
+                    texture_sample_type,
+                    double_side);
+            }));
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-        printf("Error in backward_soft_rasterize: %s\n", cudaGetErrorString(err));
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in backward_soft_rasterize: %s", cudaGetErrorString(err));
 
     return {grad_faces, grad_textures};
 }

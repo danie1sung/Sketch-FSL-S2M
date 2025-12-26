@@ -3,6 +3,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <ATen/cuda/CUDAContext.h>
 
 #include <stdio.h>
 
@@ -198,23 +199,23 @@ std::vector<at::Tensor> voxelize_sub1_cuda(
     const auto batch_size = faces.size(0);
     const auto num_faces = faces.size(1);
     const auto voxel_size = voxels.size(1);
-    const int threads = 512;
-    const dim3 blocks ((batch_size * voxel_size * voxel_size - 1) / threads +1);
+        const int threads = 512;
+        const dim3 blocks ((batch_size * voxel_size * voxel_size - 1) / threads + 1);
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "voxelize_sub1_cuda", ([&] {
-      voxelize_sub1_kernel<scalar_t><<<blocks, threads>>>(
-          faces.data<scalar_t>(),
-          voxels.data<int32_t>(),
-          batch_size,
-          num_faces,
-          voxel_size);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "voxelize_sub1_cuda", ([&] {
+            voxelize_sub1_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+                    faces.data_ptr<scalar_t>(),
+                    voxels.data_ptr<int32_t>(),
+                    batch_size,
+                    num_faces,
+                    voxel_size);
+            }));
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-            printf("Error in voxelize_sub1_kernel: %s\n", cudaGetErrorString(err));
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in voxelize_sub1_kernel: %s", cudaGetErrorString(err));
 
-    return {voxels};
+        return {voxels};
 }
 
 
@@ -226,23 +227,23 @@ std::vector<at::Tensor> voxelize_sub2_cuda(
     const auto batch_size = faces.size(0);
     const auto num_faces = faces.size(1);
     const auto voxel_size = voxels.size(1);
-    const int threads = 512;
-    const dim3 blocks ((batch_size * num_faces - 1) / threads +1);
+        const int threads = 512;
+        const dim3 blocks ((batch_size * num_faces - 1) / threads + 1);
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "voxelize_sub2_cuda", ([&] {
-      voxelize_sub2_kernel<scalar_t><<<blocks, threads>>>(
-          faces.data<scalar_t>(),
-          voxels.data<int32_t>(),
-          batch_size,
-          num_faces,
-          voxel_size);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "voxelize_sub2_cuda", ([&] {
+            voxelize_sub2_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+                    faces.data_ptr<scalar_t>(),
+                    voxels.data_ptr<int32_t>(),
+                    batch_size,
+                    num_faces,
+                    voxel_size);
+            }));
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-            printf("Error in voxelize_sub2_kernel: %s\n", cudaGetErrorString(err));
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in voxelize_sub2_kernel: %s", cudaGetErrorString(err));
 
-    return {voxels};
+        return {voxels};
 }
 
 std::vector<at::Tensor> voxelize_sub3_cuda(
@@ -252,22 +253,22 @@ std::vector<at::Tensor> voxelize_sub3_cuda(
 
     const auto batch_size = voxels.size(0);
     const auto voxel_size = voxels.size(1);
-    const int threads = 512;
-    const dim3 blocks ((batch_size * voxel_size  * voxel_size  * voxel_size - 1) / threads +1);
+        const int threads = 512;
+        const dim3 blocks ((batch_size * voxel_size  * voxel_size  * voxel_size - 1) / threads + 1);
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "voxelize_sub3_cuda", ([&] {
-      voxelize_sub3_kernel<scalar_t><<<blocks, threads>>>(
-          voxels.data<int32_t>(),
-          visible.data<int32_t>(),
-          batch_size,
-          voxel_size);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "voxelize_sub3_cuda", ([&] {
+            voxelize_sub3_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+                    voxels.data_ptr<int32_t>(),
+                    visible.data_ptr<int32_t>(),
+                    batch_size,
+                    voxel_size);
+            }));
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-            printf("Error in voxelize_sub3_kernel: %s\n", cudaGetErrorString(err));
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in voxelize_sub3_kernel: %s", cudaGetErrorString(err));
 
-    return {voxels, visible};
+        return {voxels, visible};
 }
 
 std::vector<at::Tensor> voxelize_sub4_cuda(
@@ -277,20 +278,20 @@ std::vector<at::Tensor> voxelize_sub4_cuda(
 
     const auto batch_size = voxels.size(0);
     const auto voxel_size = voxels.size(1);
-    const int threads = 512;
-    const dim3 blocks ((batch_size * voxel_size  * voxel_size  * voxel_size - 1) / threads +1);
+        const int threads = 512;
+        const dim3 blocks ((batch_size * voxel_size  * voxel_size  * voxel_size - 1) / threads + 1);
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
 
-    AT_DISPATCH_FLOATING_TYPES(faces.type(), "voxelize_sub4_cuda", ([&] {
-      voxelize_sub4_kernel<scalar_t><<<blocks, threads>>>(
-          voxels.data<int32_t>(),
-          visible.data<int32_t>(),
-          batch_size,
-          voxel_size);
-      }));
+        AT_DISPATCH_FLOATING_TYPES(faces.scalar_type(), "voxelize_sub4_cuda", ([&] {
+            voxelize_sub4_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+                    voxels.data_ptr<int32_t>(),
+                    visible.data_ptr<int32_t>(),
+                    batch_size,
+                    voxel_size);
+            }));
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-            printf("Error in voxelize_sub4_kernel: %s\n", cudaGetErrorString(err));
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in voxelize_sub4_kernel: %s", cudaGetErrorString(err));
 
-    return {voxels, visible};
+        return {voxels, visible};
 }

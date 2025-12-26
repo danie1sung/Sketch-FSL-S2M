@@ -83,7 +83,7 @@ def test():
         iou = 0
 
         for i, (im, vx) in enumerate(dataset_val.get_all_batches_for_evaluation(args.batch_size, class_id)):
-            images = torch.autograd.Variable(im).cuda()
+            images = im.cuda()
             voxels = vx.numpy()
 
             batch_iou, vertices, faces = model(images, voxels=voxels, task='test')

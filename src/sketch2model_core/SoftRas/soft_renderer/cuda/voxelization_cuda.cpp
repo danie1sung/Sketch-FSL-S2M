@@ -29,7 +29,7 @@ std::vector<at::Tensor> voxelize_sub4_cuda(
 
 // C++ interface
 
-#define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
+#define CHECK_CUDA(x) TORCH_CHECK(x.is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
@@ -75,7 +75,7 @@ std::vector<at::Tensor> voxelize_sub4(
 }
 
 
-PYBIND11_MODULE(voxelization, m) {
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
     m.def("voxelize_sub1", &voxelize_sub1, "VOXELIZE_SUB1 (CUDA)");
     m.def("voxelize_sub2", &voxelize_sub2, "VOXELIZE_SUB2 (CUDA)");
     m.def("voxelize_sub3", &voxelize_sub3, "VOXELIZE_SUB3 (CUDA)");

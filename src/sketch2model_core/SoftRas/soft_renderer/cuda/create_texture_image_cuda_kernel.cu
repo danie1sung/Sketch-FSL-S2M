@@ -1,4 +1,5 @@
 #include <ATen/ATen.h>
+#include <ATen/cuda/CUDAContext.h>
 
 #include <cmath>
 
@@ -80,28 +81,30 @@ at::Tensor create_texture_image_cuda(
     const auto num_faces = textures.size(0);
     const auto texture_res_in = int(sqrt(textures.size(1)));
     const auto tile_width = int(sqrt(num_faces - 1)) + 1;
-    const auto texture_res_out = image.size(1) / tile_width;
+        const auto texture_res_out = image.size(1) / tile_width;
 
-    const int threads = 1024;
-    const int image_size = image.numel();
-    const dim3 blocks ((image_size / 3 - 1) / threads + 1);
+        const int threads = 1024;
+        const int num_pixels = image.numel() / 3; // number of pixels (channels=3)
+        const dim3 blocks((num_pixels - 1) / threads + 1);
 
-    AT_DISPATCH_FLOATING_TYPES(image.type(), "create_texture_image_cuda", ([&] {
-      create_texture_image_cuda_kernel<scalar_t><<<blocks, threads>>>(
-          faces.data<scalar_t>(),
-          textures.data<scalar_t>(),
-          image.data<scalar_t>(),
-          image_size,
-          num_faces,
-          texture_res_in,
-          texture_res_out,
-          tile_width,
-          (scalar_t) eps);
-      }));
+        // launch on the current CUDA stream
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
+
+        AT_DISPATCH_FLOATING_TYPES(image.scalar_type(), "create_texture_image_cuda", ([&] {
+            create_texture_image_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+                    faces.data_ptr<scalar_t>(),
+                    textures.data_ptr<scalar_t>(),
+                    image.data_ptr<scalar_t>(),
+                    (size_t) num_pixels,
+                    num_faces,
+                    texture_res_in,
+                    texture_res_out,
+                    tile_width,
+                    (scalar_t) eps);
+            }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-        printf("Error in create_texture_image: %s\n", cudaGetErrorString(err));
+    TORCH_CHECK(err == cudaSuccess, "Error in create_texture_image: %s", cudaGetErrorString(err));
 
     return image;
 }

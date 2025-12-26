@@ -98,5 +98,5 @@ def save_voxel(filename, voxel):
             for k in range(voxel.shape[2]):
                 if voxel[i, j, k] == 1:
                     vertices.append([i / voxel.shape[0], j / voxel.shape[1], k / voxel.shape[2]])
-    vertices = torch.autograd.Variable(torch.tensor(vertices))
-    return save_obj(filename, vertices, torch.autograd.Variable(torch.tensor([])))
+    vertices = torch.tensor(vertices)
+    return save_obj(filename, vertices, torch.tensor([]))

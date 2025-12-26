@@ -2,6 +2,7 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <ATen/cuda/CUDAContext.h>
 
 namespace {
 template <typename scalar_t>
@@ -72,29 +73,31 @@ at::Tensor load_textures_cuda(
         at::Tensor textures,
         at::Tensor is_update) {
     // texture_size = size of the textures tensor
-    const auto texture_size = textures.numel();
-    // notice that texture_res != texture_res
-    const auto texture_res = sqrt(textures.size(1));
-    const auto image_height = image.size(0);
-    const auto image_width = image.size(1);
-    
-    const int threads = 1024;
-    const dim3 blocks ((texture_size / 3 - 1) / threads + 1);
+        const auto texture_size = textures.numel();
+        // notice that texture_res != texture_res
+        const size_t texture_res = static_cast<size_t>(std::sqrt(static_cast<double>(textures.size(1))));
+        const auto image_height = image.size(0);
+        const auto image_width = image.size(1);
 
-    AT_DISPATCH_FLOATING_TYPES(image.type(), "load_textures_cuda", ([&] {
-      load_textures_cuda_kernel<scalar_t><<<blocks, threads>>>(
-          image.data<scalar_t>(),
-          faces.data<scalar_t>(),
-          is_update.data<int32_t>(),
-          textures.data<scalar_t>(),
-          texture_size,
-          texture_res,
-          image_height,
-          image_width);
-      }));
+        const int threads = 1024;
+        const int num_texels = texture_size / 3;
+        const dim3 blocks((num_texels - 1) / threads + 1);
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-            printf("Error in load_textures: %s\n", cudaGetErrorString(err));
-    return textures;
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream().stream();
+
+        AT_DISPATCH_FLOATING_TYPES(image.scalar_type(), "load_textures_cuda", ([&] {
+            load_textures_cuda_kernel<scalar_t><<<blocks, threads, 0, stream>>>(
+                    image.data_ptr<scalar_t>(),
+                    faces.data_ptr<scalar_t>(),
+                    is_update.data_ptr<int32_t>(),
+                    textures.data_ptr<scalar_t>(),
+                    texture_size,
+                    texture_res,
+                    image_height,
+                    image_width);
+            }));
+
+        cudaError_t err = cudaGetLastError();
+        TORCH_CHECK(err == cudaSuccess, "Error in load_textures: %s", cudaGetErrorString(err));
+        return textures;
 }
