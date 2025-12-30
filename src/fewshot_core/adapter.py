@@ -14,7 +14,7 @@ class PerClassAdapter(nn.Module):
 
         # Create a list of small MLPs, one for each class
         if hidden_dim > 0:
-             self.adapters = nn.ModuleList([
+            self.adapters = nn.ModuleList([
                 nn.Sequential(
                     nn.Linear(latent_dim, hidden_dim),
                     nn.ReLU(),

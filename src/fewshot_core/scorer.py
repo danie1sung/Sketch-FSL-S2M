@@ -85,8 +85,8 @@ class FewShotScorer:
             if self.normalize:
                 mean = self.loss_mean[i].item()
                 std = self.loss_std[i].item()
-                # amax is for preventing division by zero
-                normalized_loss = (raw_loss - mean) / np.amax([std, 1e-6])
+                # Add epsilon to std to prevent division by zero.
+                normalized_loss = (raw_loss - mean) / max(std, 1e-6)
                 losses[class_name] = normalized_loss
             else:
                 losses[class_name] = raw_loss

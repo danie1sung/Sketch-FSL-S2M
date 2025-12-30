@@ -123,7 +123,7 @@ class LookAt(Transform):
 
     @property
     def eyes(self):
-        return self._eyes
+        return self._eye
 
     def transform(self, vertices):
         vertices = srf.look_at(vertices, self._eye)
@@ -153,7 +153,7 @@ class Look(Transform):
 
     @property
     def eyes(self):
-        return self._eyes
+        return self._eye
 
     def transform(self, vertices):
         vertices = srf.look(vertices, self._eye, self.camera_direction)

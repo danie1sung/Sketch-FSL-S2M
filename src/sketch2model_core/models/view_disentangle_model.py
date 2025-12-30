@@ -386,7 +386,7 @@ class ViewDisentangleModel(BaseModel):
 
     def view2camera(self, view):
         """
-        Caculate camera position from given elevation and azimuth angle.
+        Calculate camera position from given elevation and azimuth angle.
         The camera looks at the center of the object, with a distance of 2.
         """
         N = view.shape[0]
