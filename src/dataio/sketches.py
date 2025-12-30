@@ -27,8 +27,7 @@ class SketchDataset(Dataset):
             transforms.Grayscale(),
             transforms.ToTensor(),
             lambda x: 1 - x,  # Invert colors (black sketch on white background)
-            # Simple binarization
-            lambda x: (x > 0.1).float(),
+            transforms.Normalize(mean=[0.5], std=[0.5])
         ])
         
         self.file_paths = []
