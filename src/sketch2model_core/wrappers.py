@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from ..SoftRas import soft_renderer as sr
+from .SoftRas import soft_renderer as sr
 
 class EncoderWrapper(nn.Module):
     def __init__(self, model):
