@@ -106,24 +106,16 @@ def main():
 
     # --- Models ---
     opt = Opt()
-    
-    # Pass the device from command line arguments to the model options
-    if 'cuda' in args.device:
-        # The model's setup logic uses gpu_ids to determine device placement.
-        gpu_id = 0
-        if ':' in args.device:
-            try:
-                gpu_id = int(args.device.split(':')[-1])
-            except (ValueError, IndexError):
-                pass # Default to 0 if parsing fails
-        opt.n_gpus = 1
-        opt.gpu_ids = [gpu_id]
-    else:
-        opt.n_gpus = 0
-        opt.gpu_ids = []
+    opt.device = args.device # Override the dummy 'cpu' default in Opt
 
     model = ViewDisentangleModel(opt)
-    model.setup(opt) # This will now move the model to the correct device
+    model.setup(opt)
+
+    # Ensure all networks within the model are on the correct device, as model.setup() does not handle this.
+    for name in model.model_names:
+        if hasattr(model, 'net' + name):
+            net = getattr(model, 'net' + name)
+            net.to(device)
     
     encoder = EncoderWrapper(model)
     decoder = DecoderWrapper(model)
