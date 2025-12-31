@@ -17,7 +17,7 @@ class Opt:
         self.n_vertices = 642
         self.image_size = 224
         self.view_dim = 512
-        self.template_path = 'sketch2model-fewshot/src/sketch2model_core/SoftRas/data/obj/sphere/sphere_642.obj'
+        self.template_path = 'src/sketch2model_core/SoftRas/data/obj/sphere/sphere_642.obj'
         self.dataset_mode = 'shapenet'
         self.dataset_root = 'load/shapenet-synthetic'
         self.num_threads = 4
