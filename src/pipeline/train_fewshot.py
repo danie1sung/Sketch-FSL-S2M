@@ -117,8 +117,14 @@ def main():
     active_classes = cfg.get('active_classes', ALL_CLASSES)
     active_class_ids = [CLASS_TO_ID[name] for name in active_classes]
 
+    # Dynamically get latent_dim from the loaded model to avoid config mismatch
+    latent_dim = model.netFull.encoder.fc_s.out_features
+    if latent_dim != cfg['latent_dim']:
+        print(f"Warning: Latent dimension from config ({cfg['latent_dim']}) does not match "
+              f"model's latent dimension ({latent_dim}). Using the model's dimension.")
+
     adapter = PerClassAdapter(
-        latent_dim=cfg['latent_dim'],
+        latent_dim=latent_dim,
         num_classes=len(active_classes),
         hidden_dim=cfg['adapter']['hidden']
     ).to(device)
