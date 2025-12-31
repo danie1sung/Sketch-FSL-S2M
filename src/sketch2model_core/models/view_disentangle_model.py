@@ -455,7 +455,9 @@ class ViewDisentangleModel(BaseModel):
         
     def forward_inference(self):
         """Run forward pass for inference."""
-        if self.opt.view is None:
+        # Guard against Opt not having a 'view' attribute (e.g., simple Opt objects used
+        # in scripts). Use getattr to default to None if missing.
+        if getattr(self.opt, 'view', None) is None:
             self.data_view = None
         else:
             self.data_view = torch.cat([self.data_elevation[:, None], self.data_azimuth[:, None]], dim=1)
