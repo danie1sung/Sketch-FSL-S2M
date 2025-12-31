@@ -107,7 +107,7 @@ def main():
     # --- Models ---
     opt = Opt()
     model = ViewDisentangleModel(opt)
-    model.load_networks(opt)
+    model.setup(opt)
     
     encoder = EncoderWrapper(model)
     decoder = DecoderWrapper(model)
