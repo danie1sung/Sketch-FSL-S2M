@@ -31,6 +31,9 @@ class DecoderWrapper(nn.Module):
         # 2. Decode mesh from z
         vertices, faces = self.model.netFull.mesh_decoder(z)
 
+        # The 'faces' buffer in MeshDecoder can be on CPU, move it to the correct device
+        faces = faces.to(vertices.device)
+
         # 3. Render the silhouette to compare with the input sketch.
         view_angles_norm = self.model.netFull.view_decoder(zv)
         view_angles = self.model.decode_view(view_angles_norm)
