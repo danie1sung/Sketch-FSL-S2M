@@ -55,7 +55,7 @@ The model is trained and evaluated on the following 13 fixed classes:
 2.  **Configuration**
 
     - `configs/fewshot.yaml`: Contains parameters for few-shot learning episodes (N-way, K-shot), model dimensions, and loss settings.
-    - `configs/paths.yaml`: **You must edit this file.** Specify the root directory for your sketch dataset. The model weights are directly loaded within the code from the `sketch2model/checkpoints` directory, specifically configured for the `chair_pretrained` model as an example. You may need to adjust the `template_path` in `src/pipeline/train_fewshot.py` and `src/pipeline/infer.py` if you use a different template mesh.
+    - `configs/paths.yaml`: **You must edit this file.** Specify the root directory for your sketch dataset. The model weights are directly loaded within the code from the `checkpoints` directory, specifically configured for the `chair_pretrained` model as an example. You may need to adjust the `template_path` in `src/pipeline/train_fewshot.py` and `src/pipeline/infer.py` if you use a different template mesh.
 
 3.  **Run Scripts**
 
@@ -81,7 +81,7 @@ The model is trained and evaluated on the following 13 fixed classes:
 
 This repository now directly integrates the 3D encoding and decoding logic from the `sketch2model` repository into `src/sketch2model_core`. The previous `src/sketch2model_io` module has been removed.
 
-The `ViewDisentangleModel` from `sketch2model_core` is used for both encoding and decoding. Pre-trained weights are expected to be available in the `sketch2model/checkpoints` directory. The current implementation defaults to loading the `chair_pretrained` model.
+The `ViewDisentangleModel` from `sketch2model_core` is used for both encoding and decoding. Pre-trained weights are expected to be available in the `checkpoints` directory. The current implementation defaults to loading the `chair_pretrained` model.
 
 ## Evaluation
 

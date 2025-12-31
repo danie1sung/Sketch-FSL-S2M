@@ -15,7 +15,7 @@ from ..fewshot_core.losses import get_loss_function
 class Opt:
     def __init__(self):
         self.name = 'chair_pretrained'
-        self.checkpoints_dir = './sketch2model/checkpoints'
+        self.checkpoints_dir = './checkpoints'
         self.summary_dir = './runs'
         self.seed = 0
         self.class_id = 'chair'

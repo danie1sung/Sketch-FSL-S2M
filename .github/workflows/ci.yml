@@ -31,7 +31,7 @@ jobs:
     - name: Run tests with pytest
       run: |
         # Create dummy data directory to prevent warnings
-        mkdir -p sketch2model-fewshot/data/sketches/Airplane
+        mkdir -p sketch2model-fewshot/sketches/Airplane
         pytest -q
 
     - name: Run a smoke test of the training script

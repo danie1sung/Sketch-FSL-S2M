@@ -2,7 +2,7 @@
 # PLEASE FILL IN THESE PATHS.
 
 data:
-  sketches_root: ./data/sketches # Path to the root directory of the sketch dataset
+  sketches_root: ./sketches # Path to the root directory of the sketch dataset
 
 weights:
   # Path to the pretrained Sketch2Model encoder checkpoint.

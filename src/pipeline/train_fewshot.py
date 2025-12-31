@@ -20,7 +20,7 @@ from ..fewshot_core.classes import CLASS_TO_ID
 class Opt:
     def __init__(self):
         self.name = 'chair_pretrained'
-        self.checkpoints_dir = './sketch2model/checkpoints'
+        self.checkpoints_dir = './checkpoints'
         self.summary_dir = './runs'
         self.seed = 0
         self.class_id = 'chair'
