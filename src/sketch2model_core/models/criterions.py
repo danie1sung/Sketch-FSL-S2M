@@ -12,8 +12,8 @@ class LaplacianLoss(nn.Module):
         self.opt = opt
         self.template_mesh = sr.Mesh.from_obj(opt.template_path)
         self.loss = sr.LaplacianLoss(
-            self.template_mesh.vertices[0].cpu(),
-            self.template_mesh.faces[0].cpu()
+            self.template_mesh.vertices[0],
+            self.template_mesh.faces[0]
         ).to(opt.device)
 
     def forward(self, v):
@@ -26,7 +26,7 @@ class FlattenLoss(nn.Module):
         self.opt = opt
         self.template_mesh = sr.Mesh.from_obj(opt.template_path)
         self.loss = sr.FlattenLoss(
-            self.template_mesh.faces[0].cpu()
+            self.template_mesh.faces[0]
         ).to(opt.device)
     
     def forward(self, v):

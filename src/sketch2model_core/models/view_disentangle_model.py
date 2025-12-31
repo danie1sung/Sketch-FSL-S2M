@@ -155,8 +155,8 @@ class MeshDecoder(nn.Module):
     def __init__(self, filename_obj, dim_in, centroid_scale=0.1, bias_scale=1.0):
         super(MeshDecoder, self).__init__()
         self.template_mesh = sr.Mesh.from_obj(filename_obj)
-        self.register_buffer('vertices_base', self.template_mesh.vertices.cpu()[0])
-        self.register_buffer('faces', self.template_mesh.faces.cpu()[0])
+        self.register_buffer('vertices_base', self.template_mesh.vertices[0])
+        self.register_buffer('faces', self.template_mesh.faces[0])
 
         self.nv = self.vertices_base.size(0)
         self.nf = self.faces.size(0)
