@@ -52,7 +52,7 @@ class GradientReversalLayer(nn.Module):
 class ResNet18Encoder(nn.Module):
     def __init__(self, dim_in, pretrained):
         super(ResNet18Encoder, self).__init__()
-        assert(dim_in == 3)
+        # assert(dim_in == 3)
         print('ResNet18 pretrained:', pretrained)
         self.backbone = torchvision.models.resnet18(pretrained=pretrained)
         self.backbone.avgpool = nn.Identity()
@@ -60,6 +60,8 @@ class ResNet18Encoder(nn.Module):
         self.x = {}
 
     def forward(self, x):
+        if x.shape[1] == 1:
+            x = x.repeat(1, 3, 1, 1)
         batch_size = x.shape[0]
         x0 = self.backbone.conv1(x)
         x0 = self.backbone.bn1(x0)
