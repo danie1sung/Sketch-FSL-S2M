@@ -248,7 +248,8 @@ class ViewDisentangleNetwork(nn.Module):
                 'vertices': vertices,
                 'faces': faces,
                 'view_pred': view_pred,
-                'zs': zs
+                'zs': zs,
+                'zv_pred': zv_pred
             }
         else:
             """Training / Validation / Testing"""

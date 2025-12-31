@@ -13,6 +13,8 @@ def silhouette_l2_loss(reconstruction: torch.Tensor, target: torch.Tensor) -> to
     Returns:
         torch.Tensor: A scalar loss value.
     """
+    print("Shape of reconstruction:", reconstruction.shape)
+    print("Shape of target:", target.shape)
     return F.mse_loss(reconstruction, target)
 
 def get_loss_function(loss_type: str):
