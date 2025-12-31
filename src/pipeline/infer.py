@@ -63,19 +63,22 @@ def main():
     model = ViewDisentangleModel(opt)
     model.setup(opt)
     
+    from ..fewshot_core.classes import CLASSES as ALL_CLASSES
+
     encoder = EncoderWrapper(model)
     decoder = DecoderWrapper(model)
+
+    active_classes = cfg.get('active_classes', ALL_CLASSES)
     # For inference, adapter is not trained, it acts as identity
-    adapter = PerClassAdapter(latent_dim=cfg['latent_dim'], num_classes=13).to(device)
+    adapter = PerClassAdapter(latent_dim=cfg['latent_dim'], num_classes=len(active_classes)).to(device)
 
     encoder.eval()
     decoder.eval()
     adapter.eval()
 
     # --- Scorer and Loss ---
-    # Scorer doesn't need calibration/normalization for single-image inference.
     loss_fn = get_loss_function(cfg['loss']['type'])
-    scorer = FewShotScorer(encoder, decoder, loss_fn, adapter, normalize=False)
+    scorer = FewShotScorer(encoder, decoder, loss_fn, adapter, normalize=False, classes=active_classes)
 
     # --- Image Preprocessing ---
     transform = transforms.Compose([

@@ -9,7 +9,7 @@ class EpisodicSampler:
     A deterministic sampler that creates N-way K-shot Q-query episodes
     from a source dataset.
     """
-    def __init__(self, dataset: Dataset, n_way: int, k_shot: int, q_query: int, num_episodes: int):
+    def __init__(self, dataset: Dataset, n_way: int, k_shot: int, q_query: int, num_episodes: int, allowed_classes=None):
         self.dataset = dataset
         self.n_way = n_way
         self.k_shot = k_shot
@@ -19,9 +19,20 @@ class EpisodicSampler:
         if not hasattr(dataset, 'get_indices_for_class'):
             raise AttributeError("The provided dataset must have a 'get_indices_for_class' method.")
 
+        # Determine which global class IDs are allowed for sampling. 'allowed_classes' may be
+        # a list of class names (strings) or global numeric IDs. If None, use all classes.
+        if allowed_classes is None:
+            self.allowed_ids = list(range(len(CLASSES)))
+        else:
+            if isinstance(allowed_classes[0], str):
+                from ..fewshot_core.classes import CLASS_TO_ID
+                self.allowed_ids = [CLASS_TO_ID[name] for name in allowed_classes]
+            else:
+                self.allowed_ids = list(allowed_classes)
+
         self.class_indices = {
             i: self.dataset.get_indices_for_class(i)
-            for i in range(len(CLASSES))
+            for i in self.allowed_ids
         }
 
     def __len__(self) -> int:
@@ -35,8 +46,8 @@ class EpisodicSampler:
         rng = np.random.default_rng(seed=42)
 
         for _ in range(self.num_episodes):
-            # 1. Sample N classes for the episode
-            episode_classes = rng.choice(len(CLASSES), size=self.n_way, replace=False)
+            # 1. Sample N classes for the episode (from the allowed subset)
+            episode_classes = rng.choice(self.allowed_ids, size=self.n_way, replace=False)
             
             support_indices = []
             query_indices = []

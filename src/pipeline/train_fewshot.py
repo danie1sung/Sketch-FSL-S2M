@@ -112,9 +112,14 @@ def main():
     encoder = EncoderWrapper(model)
     decoder = DecoderWrapper(model)
 
+    from ..fewshot_core.classes import CLASSES as ALL_CLASSES, CLASS_TO_ID
+
+    active_classes = cfg.get('active_classes', ALL_CLASSES)
+    active_class_ids = [CLASS_TO_ID[name] for name in active_classes]
+
     adapter = PerClassAdapter(
-        latent_dim=cfg['latent_dim'], 
-        num_classes=13, 
+        latent_dim=cfg['latent_dim'],
+        num_classes=len(active_classes),
         hidden_dim=cfg['adapter']['hidden']
     ).to(device)
 
@@ -125,7 +130,8 @@ def main():
         n_way=cfg['N_way'],
         k_shot=cfg['K_shot'],
         q_query=cfg['Q_query'],
-        num_episodes=cfg['episodes']
+        num_episodes=cfg['episodes'],
+        allowed_classes=active_class_ids
     )
     
     # --- Scorer and Loss ---
@@ -135,7 +141,8 @@ def main():
         decoder, 
         loss_fn,
         adapter,
-        normalize=cfg['loss']['normalize_per_class']
+        normalize=cfg['loss']['normalize_per_class'],
+        classes=active_classes
     )
 
     # --- Main Loop ---

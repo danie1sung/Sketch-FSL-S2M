@@ -10,15 +10,21 @@ class FewShotScorer:
     Computes per-class reconstruction losses and predicts the class with the minimum loss.
     Optionally calibrates loss statistics on a support set for normalization.
     """
-    def __init__(self, encoder, decoder, loss_fn, adapter: PerClassAdapter, normalize: bool = False):
+    def __init__(self, encoder, decoder, loss_fn, adapter: PerClassAdapter, normalize: bool = False, classes: list = None):
         self.encoder = encoder
         self.decoder = decoder
         self.loss_fn = loss_fn
         self.adapter = adapter
         self.normalize = normalize
-        
-        self.num_classes = len(CLASSES)
-        
+
+        # Determine which classes to consider for scoring/prediction
+        from .classes import CLASSES as ALL_CLASSES, CLASS_TO_ID
+        self.classes = classes if classes is not None else ALL_CLASSES
+        self.num_classes = len(self.classes)
+
+        # Map global class IDs to local adapter indices (0..num_classes-1)
+        self._global_to_local = {CLASS_TO_ID[name]: i for i, name in enumerate(self.classes)}
+
         # Statistics for normalization, calibrated on the support set.
         self.loss_mean = torch.zeros(self.num_classes)
         self.loss_std = torch.ones(self.num_classes)
@@ -28,8 +34,13 @@ class FewShotScorer:
         Calibrate normalization statistics (mean, std) on the support set losses.
         Also fits the per-class adapter on the support set.
         """
-        # 1. Fit the adapter on the support set
-        self.adapter.fit(self.encoder, self.decoder, self.loss_fn, support_sketches, support_labels)
+        # 1. Map support labels (global IDs) to local indices and fit the adapter
+        support_labels_local = torch.tensor(
+            [self._global_to_local[int(l.item())] for l in support_labels],
+            dtype=torch.long,
+            device=support_sketches.device
+        )
+        self.adapter.fit(self.encoder, self.decoder, self.loss_fn, support_sketches, support_labels_local)
 
         # 2. Calibrate normalization statistics
         if self.normalize:
@@ -38,16 +49,17 @@ class FewShotScorer:
             with torch.no_grad():
                 z3d = self.encoder(support_sketches)
                 for i in range(len(support_sketches)):
-                    true_class_id = support_labels[i].item()
+                    global_id = int(support_labels[i].item())
+                    local_id = self._global_to_local[global_id]
                     
                     # Get adapted latent code for this class
-                    adapted_z3d = self.adapter(z3d[i].unsqueeze(0), torch.tensor([true_class_id]))
+                    adapted_z3d = self.adapter(z3d[i].unsqueeze(0), torch.tensor([local_id], device=z3d.device))
 
                     loss = self.loss_fn(
-                        self.decoder(adapted_z3d, torch.tensor([true_class_id])),
+                        self.decoder(adapted_z3d, torch.tensor([local_id], device=z3d.device)),
                         support_sketches[i].unsqueeze(0)
                     )
-                    all_losses[true_class_id].append(loss.item())
+                    all_losses[local_id].append(loss.item())
 
             for i in range(self.num_classes):
                 if all_losses[i]:
@@ -78,7 +90,7 @@ class FewShotScorer:
         
         batch_losses = torch.mean((reconstructions - target).pow(2), dim=[1,2,3])
 
-        for i, class_name in enumerate(CLASSES):
+        for i, class_name in enumerate(self.classes):
             raw_loss = batch_losses[i].item()
             
             # Normalize if required

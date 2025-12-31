@@ -54,7 +54,7 @@ The model is trained and evaluated on the following 13 fixed classes:
 
 2.  **Configuration**
 
-    - `configs/fewshot.yaml`: Contains parameters for few-shot learning episodes (N-way, K-shot), model dimensions, and loss settings.
+    - `configs/fewshot.yaml`: Contains parameters for few-shot learning episodes (N-way, K-shot), model dimensions, loss settings, and an `active_classes` list to limit which classes are considered (defaults to a small subset in this repo).
     - `configs/paths.yaml`: **You must edit this file.** Specify the root directory for your sketch dataset. The model weights are directly loaded within the code from the `checkpoints` directory, specifically configured for the `chair_pretrained` model as an example. You may need to adjust the `template_path` in `src/pipeline/train_fewshot.py` and `src/pipeline/infer.py` if you use a different template mesh.
 
 3.  **Run Scripts**

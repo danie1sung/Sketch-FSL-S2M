@@ -15,6 +15,15 @@ adapter:
   type: "linear" # "linear" or "mlp"
   hidden: 0 # Hidden layer size for MLP adapter. 0 means linear.
 
+# Active classes to consider during few-shot episodes and inference.
+# If omitted, all classes from src/fewshot_core/classes.py are used.
+active_classes:
+  - "Airplane"
+  - "Car"
+  - "Chair"
+  - "Lamp"
+  - "Table"
+
 # Data parameters
 data:
   img_size: 224
