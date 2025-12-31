@@ -55,13 +55,18 @@ class PerClassAdapter(nn.Module):
         Fit the adapter on the support set.
         """
         optimizer = optim.Adam(self.parameters(), lr=lr)
-        z3d = encoder(support_sketches).detach() # Freeze encoder
+        # The encoder now returns both shape and view latents
+        zs, zv_pred = encoder(support_sketches)
+        z3d = zs.detach()
+        zv_pred = zv_pred.detach()
+
 
         for _ in range(steps):
             optimizer.zero_grad()
             
             adapted_z3d = self.forward(z3d, support_labels)
-            reconstructions = decoder(adapted_z3d, support_labels)
+            # The decoder now requires the view latent to render the reconstruction
+            reconstructions = decoder(adapted_z3d, support_labels, zv=zv_pred)
             
             loss = loss_fn(reconstructions, support_sketches)
             
