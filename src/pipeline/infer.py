@@ -39,7 +39,7 @@ class Opt:
         self.isTest = True
         self.isInfer = False
         self.n_gpus = 0
-        self.device = 'cpu'
+        self.device = 'cuda'
         self.vis_freq = 1
         self.val_epoch_vis_n = 1
         self.test_epoch_vis_n = 1
@@ -49,7 +49,7 @@ def main():
     parser.add_argument("--config", type=str, required=True, help="Path to the main configuration file.")
     parser.add_argument("--paths", type=str, default="configs/paths.yaml", help="Path to the data/weights paths configuration file.")
     parser.add_argument("--image", type=str, required=True, help="Path to the input sketch image.")
-    parser.add_argument("--device", type=str, default="cpu", help="Device to run on ('cpu' or 'cuda').")
+    parser.add_argument("--device", type=str, default="cuda", help="Device to run on ('cuda').")
     args = parser.parse_args()
 
     # --- Setup ---

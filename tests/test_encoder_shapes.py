@@ -30,8 +30,8 @@ class Opt:
         self.isTrain = False
         self.isTest = True
         self.isInfer = False
-        self.n_gpus = 0
-        self.device = 'cpu'
+        self.n_gpus = 1
+        self.device = 'cuda'
         self.vis_freq = 1
         self.val_epoch_vis_n = 1
         self.test_epoch_vis_n = 1

@@ -22,7 +22,7 @@ def test_episode_loop_runs_end_to_end():
     latent_dim = 32
     img_size = 32
     num_classes = 13
-    device = torch.device("cpu")
+    device = torch.device("cuda")
 
     # --- Models (Real components, random weights) ---
     encoder = Sketch2ModelEncoder(latent_dim=latent_dim).to(device)

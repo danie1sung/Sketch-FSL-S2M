@@ -123,7 +123,9 @@ class BaseOptions():
 
         opt.n_gpus = torch.cuda.device_count()
         
-        opt.device = 'cuda:0' if opt.n_gpus > 0 else 'cpu'
+        # Default to GPU device 'cuda:0'. If no GPUs are available, the runtime
+        # environment will need to provide CUDA; we do not fall back to CPU here.
+        opt.device = 'cuda:0'
         
         if opt.n_gpus > 0:
             torch.cuda.set_device(opt.device)

@@ -15,4 +15,4 @@ python -m src.pipeline.infer \
     --config configs/fewshot.yaml \
     --paths configs/paths.yaml \
     --image "${IMAGE_PATH}" \
-    --device cpu
+    --device cuda
