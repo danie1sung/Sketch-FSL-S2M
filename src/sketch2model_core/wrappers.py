@@ -7,7 +7,12 @@ class EncoderWrapper(nn.Module):
         self.model = model
 
     def forward(self, sketch, view=None):
-        self.model.set_input({'image': sketch, 'view': view})
+        # Only include 'view' in the input dict if it's provided. Passing None
+        # caused set_input to try calling .to() on None leading to AttributeError.
+        input_dict = {'image': sketch}
+        if view is not None:
+            input_dict['view'] = view
+        self.model.set_input(input_dict)
         self.model.forward_inference()
         return self.model.out_vertices, self.model.out_faces
 
