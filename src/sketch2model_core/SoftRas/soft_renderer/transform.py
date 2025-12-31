@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .. import soft_renderer as sr
+import soft_renderer as sr
 from . import functional as srf
 
 

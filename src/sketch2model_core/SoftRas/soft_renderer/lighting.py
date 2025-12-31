@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from .. import soft_renderer as sr
+import soft_renderer as sr
 from . import functional as srf
 
 
