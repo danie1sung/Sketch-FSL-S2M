@@ -247,7 +247,8 @@ class ViewDisentangleNetwork(nn.Module):
             return {
                 'vertices': vertices,
                 'faces': faces,
-                'view_pred': view_pred
+                'view_pred': view_pred,
+                'zs': zs
             }
         else:
             """Training / Validation / Testing"""

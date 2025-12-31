@@ -14,7 +14,7 @@ class EncoderWrapper(nn.Module):
             input_dict['view'] = view
         self.model.set_input(input_dict)
         self.model.forward_inference()
-        return self.model.out_vertices, self.model.out_faces
+        return self.model.out_zs
 
 class DecoderWrapper(nn.Module):
     def __init__(self, model):
