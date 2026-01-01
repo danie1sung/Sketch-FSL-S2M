@@ -47,16 +47,16 @@ class FewShotScorer:
             all_losses = {i: [] for i in range(self.num_classes)}
             
             with torch.no_grad():
-                z3d = self.encoder(support_sketches)
+                zs, zv = self.encoder(support_sketches)
                 for i in range(len(support_sketches)):
                     global_id = int(support_labels[i].item())
                     local_id = self._global_to_local[global_id]
                     
                     # Get adapted latent code for this class
-                    adapted_z3d = self.adapter(z3d[i].unsqueeze(0), torch.tensor([local_id], device=z3d.device))
+                    adapted_zs = self.adapter(zs[i].unsqueeze(0), torch.tensor([local_id], device=zs.device))
 
                     loss = self.loss_fn(
-                        self.decoder(adapted_z3d, torch.tensor([local_id], device=z3d.device)),
+                        self.decoder(adapted_zs, torch.tensor([local_id], device=zs.device), zv=zv[i].unsqueeze(0)),
                         support_sketches[i].unsqueeze(0)
                     )
                     all_losses[local_id].append(loss.item())
@@ -77,15 +77,15 @@ class FewShotScorer:
         Returns:
             Dict[str, float]: A dictionary mapping class names to their reconstruction losses.
         """
-        z3d = self.encoder(sketch)
+        zs, zv = self.encoder(sketch)
         losses = {}
 
-        class_ids = torch.arange(self.num_classes, device=z3d.device)
+        class_ids = torch.arange(self.num_classes, device=zs.device)
         
         # Get adapted latent codes for all classes
-        adapted_z3d = self.adapter(z3d.repeat(self.num_classes, 1), class_ids)
+        adapted_zs = self.adapter(zs.repeat(self.num_classes, 1), class_ids)
 
-        reconstructions = self.decoder(adapted_z3d, class_ids)
+        reconstructions = self.decoder(adapted_zs, class_ids, zv=zv.repeat(self.num_classes, 1))
         target = sketch.repeat(self.num_classes, 1, 1, 1)
         
         batch_losses = torch.mean((reconstructions - target).pow(2), dim=[1,2,3])
