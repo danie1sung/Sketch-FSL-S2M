@@ -1,7 +1,7 @@
 # Few-shot learning parameters
 latent_dim: 256
 N_way: 5
-K_shot: 15
+K_shot: 50
 Q_query: 15
 episodes: 200 # Number of episodes for training/evaluation
 
