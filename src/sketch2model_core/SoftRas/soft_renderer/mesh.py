@@ -18,9 +18,14 @@ class Mesh(object):
         self._faces = faces
 
         if isinstance(self._vertices, np.ndarray):
-            self._vertices = torch.from_numpy(self._vertices).float().cuda()
+            self._vertices = torch.from_numpy(self._vertices).float()
         if isinstance(self._faces, np.ndarray):
-            self._faces = torch.from_numpy(self._faces).int().cuda()
+            self._faces = torch.from_numpy(self._faces).int()
+
+        if 'cuda' not in self._vertices.device.type:
+            self._vertices = self._vertices.cuda()
+        if 'cuda' not in self._faces.device.type:
+            self._faces = self._faces.cuda()
         if self._vertices.ndimension() == 2:
             self._vertices = self._vertices[None, :, :]
         if self._faces.ndimension() == 2:

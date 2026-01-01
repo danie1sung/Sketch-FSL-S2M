@@ -8,7 +8,7 @@ python -m src.pipeline.train_fewshot \
     --config configs/fewshot.yaml \
     --paths configs/paths.yaml \
     --eval_only \
-    --device cpu
+    --device cuda
 
 echo "--- Evaluation Finished ---"
 

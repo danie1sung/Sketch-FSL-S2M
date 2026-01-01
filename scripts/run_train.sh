@@ -8,7 +8,7 @@ echo "--- Starting Few-Shot Training/Adaptation ---"
 python -m src.pipeline.train_fewshot \
     --config configs/fewshot.yaml \
     --paths configs/paths.yaml \
-    --device cpu
+    --device cuda
 
 echo "--- Training/Adaptation Finished ---"
 
