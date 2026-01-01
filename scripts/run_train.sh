@@ -8,7 +8,7 @@ echo "--- Starting Few-Shot Training/Adaptation ---"
 python -m src.pipeline.train_fewshot \
     --config configs/fewshot.yaml \
     --paths configs/paths.yaml \
-    --device cuda
+    --device cuda \
 
     $@ # Pass all arguments from the shell script to the python script
 
