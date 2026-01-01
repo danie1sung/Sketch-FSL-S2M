@@ -92,6 +92,12 @@ def main():
     parser.add_argument("--paths", type=str, default="configs/paths.yaml", help="Path to the data/weights paths configuration file.")
     parser.add_argument("--eval_only", action="store_true", help="If set, runs evaluation only.")
     parser.add_argument("--device", type=str, default="cuda", help="Device to run on ('cuda').")
+    parser.add_argument("--n_way", type=int, help="Override N_way from the config.")
+    parser.add_argument("--k_shot", type=int, help="Override K_shot from the config.")
+    parser.add_argument("--q_query", type=int, help="Override Q_query from the config.")
+    parser.add_argument("--episodes", type=int, help="Override the number of episodes from the config.")
+    parser.add_argument("--adapter_hidden", type=int, help="Override adapter hidden dimension from the config.")
+    parser.add_argument("--normalize_loss", action="store_true", help="Override loss normalization setting from the config.")
     args = parser.parse_args()
 
     # --- Setup ---
@@ -100,6 +106,20 @@ def main():
     
     cfg = load_config(args.config)
     paths_cfg = load_config(args.paths) # Load paths config
+
+    # Override config with command-line arguments if provided
+    if args.n_way is not None:
+        cfg['N_way'] = args.n_way
+    if args.k_shot is not None:
+        cfg['K_shot'] = args.k_shot
+    if args.q_query is not None:
+        cfg['Q_query'] = args.q_query
+    if args.episodes is not None:
+        cfg['episodes'] = args.episodes
+    if args.adapter_hidden is not None:
+        cfg['adapter']['hidden'] = args.adapter_hidden
+    if args.normalize_loss:
+        cfg['loss']['normalize_per_class'] = True
     
     mode = "EVALUATION" if args.eval_only else "TRAINING"
     print(f"--- Running in {mode} mode ---")

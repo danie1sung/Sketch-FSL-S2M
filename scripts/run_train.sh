@@ -10,5 +10,7 @@ python -m src.pipeline.train_fewshot \
     --paths configs/paths.yaml \
     --device cuda
 
+    $@ # Pass all arguments from the shell script to the python script
+
 echo "--- Training/Adaptation Finished ---"
 
